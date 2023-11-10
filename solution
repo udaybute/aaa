@@ -1,0 +1,39 @@
+The error message suggests that there is a problem with the JSON payload being sent in the request. Based on the code provided, it seems like the issue might be with the `WorkitemAttachmentsListPostRequest` object and its associated data.
+
+To fix the code, you can make the following changes:
+
+1. Modify the `getWorkitemAttachmentsListPostRequest` method to set the `attributes` and `type` properties correctly:
+
+```java
+private static WorkitemAttachmentsListPostRequest getWorkitemAttachmentsListPostRequest(Path attachFilePath) {
+    WorkitemAttachmentsListPostRequest attachPostRequest = new WorkitemAttachmentsListPostRequest();
+    WorkitemAttachmentsListPostRequestData attachPostRequestData = new WorkitemAttachmentsListPostRequestData();
+    DocumentAttachmentsListPostRequestAttributes attributes = new DocumentAttachmentsListPostRequestAttributes();
+    attributes.setTitle(attachFilePath.getFileName().toString().substring(0, attachFilePath.getFileName().toString().lastIndexOf('.')));
+    attributes.setFileName(attachFilePath.getFileName().toString());
+    attachPostRequestData.setAttributes(attributes);
+    attachPostRequestData.setType(TypeEnum.WORKITEM_ATTACHMENTS); // Update enum reference
+    attachPostRequest.addDataItem(attachPostRequestData);
+    return attachPostRequest;
+}
+```
+
+2. Update the `main` method to handle the `ApiException` and print the error response:
+
+```java
+try {
+    WorkitemAttachmentsListPostResponse response = attachApi.postWorkItemAttachmentsWithHttpInfo(filesToAttach, attachPostRequest, projectId, workItemId);
+    List<WorkitemAttachmentsListPostResponseData> responseDataList = response.getData();
+    for (WorkitemAttachmentsListPostResponseData responseData : responseDataList) {
+        System.out.println("Attachment " + responseData.getId() + " created!");
+    }
+} catch (ApiException e) {
+    e.printStackTrace();
+    System.err.println(e.getResponseBody());
+    System.exit(1);
+}
+```
+
+These changes ensure that the `attributes` and `type` values are set correctly in the request payload and handle the `ApiException` to print the error response.
+
+Please try these fixes and let me know if you encounter any further issues.
