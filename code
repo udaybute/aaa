@@ -1,0 +1,82 @@
+package com.hcl.polarion.rest.example;
+ 
+import com.hcl.polarion.rest.client.api.WorkItemAttachmentsApi;
+import com.hcl.polarion.rest.client.invoker.ApiClient;
+import com.hcl.polarion.rest.client.invoker.ApiException;
+import com.hcl.polarion.rest.client.model.*;
+import com.hcl.polarion.rest.client.model.DocumentAttachmentsListGetResponseData.TypeEnum;
+ 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Properties;
+ 
+public class TestRestApi {
+ 
+    public static ApiClient getPolarionRestClientWithKey(String polarionUrl, String accessToken) {
+        ApiClient apiClient = new ApiClient();
+        String slash = polarionUrl.endsWith("/") ? "/" : "";
+        String polarionRestUrl = polarionUrl + slash + "/rest/v1";
+        apiClient.setBasePath(polarionRestUrl);
+        apiClient.setAccessToken(accessToken);
+        return apiClient;
+    }
+ 
+    public static Properties readPolarionProperties() throws IOException {
+        Properties props = new Properties();
+        //load a properties file from class path, inside static method
+        props.load(TestRestApi.class.getClassLoader().getResourceAsStream("polarion.properties"));
+        return props;
+    }
+ 
+    public static void main(String[] args) {
+        Properties props;
+        try {
+            props = readPolarionProperties();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+            return;
+        }
+ 
+        String serverUrl = props.getProperty("polarion.server.url");
+        String accessToken = props.getProperty("polarion.auth.token");
+        ApiClient client = getPolarionRestClientWithKey(serverUrl, accessToken);
+ 
+        Path attachFilePath = Paths.get("C:\\Image\\ss.png");
+        String projectId = "BalajiGarud_ProjectTask";
+        String workItemId = "BGPT-520";
+ 
+        WorkitemAttachmentsListPostRequest attachPostRequest = getWorkitemAttachmentsListPostRequest(attachFilePath);
+        File attachFile = attachFilePath.toFile();
+        List<File> filesToAttach = List.of(attachFile);
+ 
+        WorkItemAttachmentsApi attachApi = new WorkItemAttachmentsApi(client);
+ 
+        try {
+            WorkitemAttachmentsListPostResponse response = attachApi.postWorkItemAttachments(filesToAttach, attachPostRequest, projectId, workItemId);
+            List<WorkitemAttachmentsListPostResponseData> responseDataList = response.getData();
+            for (WorkitemAttachmentsListPostResponseData responseData : responseDataList) {
+                System.out.println("Attachment " + responseData.getId() + " created!");
+            }
+        } catch (ApiException e) {
+            e.printStackTrace();
+            System.err.println(e.getResponseBody());
+            System.exit(1);
+        }
+    }
+ 
+    private static WorkitemAttachmentsListPostRequest getWorkitemAttachmentsListPostRequest(Path attachFilePath) {
+        WorkitemAttachmentsListPostRequest attachPostRequest = new WorkitemAttachmentsListPostRequest();
+        WorkitemAttachmentsListPostRequestData attachPostRequestData = new WorkitemAttachmentsListPostRequestData();
+        DocumentAttachmentsListPostRequestAttributes attributes = new DocumentAttachmentsListPostRequestAttributes();
+        attributes.setTitle(attachFilePath.getFileName().toString().substring(0, attachFilePath.getFileName().toString().lastIndexOf('.')));
+        attributes.setFileName(attachFilePath.getFileName().toString());
+        attachPostRequestData.setAttributes(attributes);
+        attachPostRequestData.setType(com.hcl.polarion.rest.client.model.WorkitemAttachmentsListPostRequestData.TypeEnum.WORKITEM_ATTACHMENTS);
+        attachPostRequest.addDataItem(attachPostRequestData);
+        return attachPostRequest;
+    }
+}
