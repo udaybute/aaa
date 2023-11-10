@@ -1,0 +1,7 @@
+com.hcl.polarion.rest.client.invoker.ApiException: 400
+	at com.hcl.polarion.rest.client.invoker.ApiClient.handleResponse(ApiClient.java:926)
+	at com.hcl.polarion.rest.client.invoker.ApiClient.execute(ApiClient.java:842)
+	at com.hcl.polarion.rest.client.api.WorkItemAttachmentsApi.postWorkItemAttachmentsWithHttpInfo(WorkItemAttachmentsApi.java:1152)
+	at com.hcl.polarion.rest.client.api.WorkItemAttachmentsApi.postWorkItemAttachments(WorkItemAttachmentsApi.java:1135)
+	at com.hcl.polarion.rest.example.TestRestApi.main(TestRestApi.java:59)
+{"errors":[{"status":"400","title":"Bad Request","detail":"Malformed JSON","source":{"pointer":"$","parameter":null}}]}
